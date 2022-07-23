@@ -1,0 +1,27 @@
+{
+  "name": "sunil-app",
+  "version": "1.0.0",
+  "main": "web/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "scaffold": "shopify app scaffold",
+    "deploy": "shopify app deploy"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.7.0",
+    "@shopify/app": "3.2.0",
+    "@shopify/cli": "3.2.0",
+    "antd": "^4.21.7",
+    "axios": "^0.27.2",
+    "mysql": "^2.18.1",
+    "react-beautiful-dnd": "^13.1.0",
+    "react-drag-listview": "^0.2.1",
+    "react-movable": "^3.0.4",
+    "react-router-dom": "^6.3.0"
+  },
+  "author": "Mandasa"
+}
