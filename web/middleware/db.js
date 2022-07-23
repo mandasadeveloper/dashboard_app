@@ -25,7 +25,7 @@ app.get("/api/get-data", async (req, res) => {
        res.status(200).send(result); 
       })
       
-      });
+      }); 
 
   app.get("/api/get-customers", async (req, res) => {
     const shop = req.query.shop;
