@@ -29,72 +29,47 @@ app.get("/api/get-data", async (req, res) => {
 
   app.get("/api/get-customers", async (req, res) => {
     const shop = req.query.shop;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const test_session = JSON.parse(result[0].session);
-      const customers = await Customer.all({
-        session: test_session,
-      });
-      res.send(customers);
-     });
-   
-
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const customers = await Customer.all({
+      session: test_session,
+    });
+    res.send(customers);
   });
 
   //get single customer
   app.get("/api/get-customer/:id", async (req, res) => {
     const id = req.params.id;
     const shop = req.query.shop;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const test_session = JSON.parse(result[0].session);
-      const customer =  await Customer.find({
-        session:test_session,
-        id:id,
-        });
-        res.status(200).send(customer); 
-     });
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const customer =  await Customer.find({
+      session:test_session,
+      id:id,
+      });
+      res.status(200).send(customer); 
   });
 
 
   app.get("/api/get-pages", async (req, res) => {
     const shop = req.query.shop;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const session = JSON.parse(result[0].session);
-        const data = await Page.all({
-          session: session,
-        });
-          res.status(200).send(data); 
-     });
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const data = await Page.all({
+      session: test_session,
+    });
+      res.status(200).send(data);  
   });
 
   app.get("/get-customer/:id", async (req, res) => {
     const id = req.params.id;
     const shop = req.query.shop;
-    db.query("SELECT * FROM user WHERE shop = ? AND status = ?", [shop,1], async(err,result)=>{
-      if(err)console.log(err)
-      else {
-      // `session` is built as part of the OAuth process
-      const client = new Shopify.Clients.Rest(
-        result[0].shop,
-        result[0].access_token
-      );
-      const customer =await client.get({
-      	path: `customers/${id}`,
-      });
-      res.status(200).send(customer); 
-      }
-    })
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const client = new Shopify.Clients.Rest(
+      test_session.shop,
+      test_session.accessToken
+    );
+    const customer =await client.get({
+      path: `customers/${id}`,
+    });
+    res.status(200).send(customer); 
   });
 
 
@@ -174,55 +149,35 @@ app.get("/api/get-data", async (req, res) => {
     const id = req.query.id;
     const data = JSON.stringify(req.body.value);
     const dir = `locales/${req.body.locale}-CD.json`;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const test_session = JSON.parse(result[0].session);
-      const asset = new Asset({session: test_session});
-      asset.theme_id = id;
-      asset.key = dir;
-      asset.value=data;
-      await asset.save();
-      res.status(200).send(asset); 
-     });
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const asset = new Asset({session: test_session});
+    asset.theme_id = id;
+    asset.key = dir;
+    asset.value=data;
+    await asset.save();
+    res.status(200).send(asset); 
   });
 
   app.get("/api/get-main-theme", async (req, res) => {
     const shop = req.query.shop;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const test_session = JSON.parse(result[0].session);
-      const asset = await Theme.all({
-        session: test_session,
-      });
-      res.send(asset);
-     });
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const asset = await Theme.all({
+      session: test_session,
+    });
+    res.status(200).send(asset); 
   });
 
   app.get("/api/get-json", async (req, res) => {
     const shop = req.query.shop;
     const locale = req.query.locale;
-    db.query(`SELECT theme_id FROM theme WHERE shop = ?`,shop, (err,theme)=>{
-    const id = theme[0].theme_id;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const test_session = JSON.parse(result[0].session);
-      const asset = await Asset.all({
-        session: test_session,
-        theme_id:id,
-        asset: {"key":`locales/${locale}-CD.json`}
-      });
-      res.status(200).send(asset); 
+    const id="";
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const asset = await Asset.all({
+      session: test_session,
+      theme_id:id,
+      asset: {"key":`locales/${locale}-CD.json`}
     });
-  });
+    res.status(200).send(asset); 
   });
   
 
@@ -289,21 +244,15 @@ app.get("/api/get-data", async (req, res) => {
   app.post("/api/graphql-data-access", async (req, res) => {
     const fields =req.body;
     const shop = req.query.shop;
-    db.query("SELECT session FROM user WHERE shop = ? AND status = ?", [shop,1],
-    async(err,result)=>{
-      if(err) {
-      console.log(err)
-      } 
-      const session = JSON.parse(result[0].session);
-      const client = new Shopify.Clients.Graphql(
-        session.shop,
-        session.accessToken
-        );
-        const data = await client.query({
-          data: fields,
-        });
-          res.status(200).send(data); 
-     });
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const client = new Shopify.Clients.Graphql(
+      test_session.shop,
+      test_session.accessToken
+      );
+      const data = await client.query({
+        data: fields,
+      });
+        res.status(200).send(data); 
   });
 
   app.post("/api/toggle-value", async (req, res) => {
@@ -329,4 +278,24 @@ app.get("/api/get-data", async (req, res) => {
        res.status(200).send(result); 
       });
   });
+
+
+
+
+  //Customer Dashboard app fronted operation
+
+  app.get("/api/get-customer/", async (req, res) => {
+    const id = 5763078651963;
+    const shop ="electronicbiz.myshopify.com";
+    const test_session = await Shopify.Utils.loadOfflineSession(shop);
+    const customer = new Customer({session: test_session});
+    customer.id = id;
+    customer.first_name = "mandasa";
+    await customer.save({
+      update: true,
+    });
+      res.status(200).send(customer); 
+  });
+
+
 }
