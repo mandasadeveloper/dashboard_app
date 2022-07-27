@@ -39,7 +39,7 @@ export default function applyAuthMiddleware(app,{billing = { required: false } }
     res.send(
       topLevelAuthRedirect({
         apiKey: Shopify.Context.API_KEY,
-        hostName:"https://dashboard-app-pro.herokuapp.com/"||Shopify.Context.HOST_NAME,
+        hostName:Shopify.Context.HOST_NAME,
         shop: req.query.shop,
       })
     );
